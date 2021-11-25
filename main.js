@@ -1,49 +1,119 @@
 // GET REQUEST
 function getTodos() {
-  console.log('GET Request');
+  const config={
+    headers:{
+      'Content-Type':'application/json',
+      Authorizaton:'t0Ken@45328y994437949'
+    }
+  };
+  axios.get('https://jsonplaceholder.typicode.com/todos?_limit=50',config)
+  .then(res=>showOutput(res))
+  .catch(err=>console.error(err));
 }
 
 // POST REQUEST
 function addTodo() {
-  console.log('POST Request');
+  axios.post('https://jsonplaceholder.typicode.com/todos',{
+    title: 'NEW TODO',
+    completed: false
+  }).then(res=>showOutput(res))
+    .catch(err => console.error(err));
 }
 
 // PUT/PATCH REQUEST
 function updateTodo() {
-  console.log('PUT/PATCH Request');
+  axios
+  .put('https://jsonplaceholder.typicode.com/todos/1',{
+    title: 'UPDATE TODO',
+    completed: false
+  }).then(res=>showOutput(res))
+  .catch(err=>console.error(err));
 }
 
 // DELETE REQUEST
 function removeTodo() {
-  console.log('DELETE Request');
+  axios.delete('https://jsonplaceholder.typicode.com/todos/1')
+  .then(res=>showOutput(res))
+  .catch(err=>console.error(err));
 }
 
 // SIMULTANEOUS DATA
 function getData() {
-  console.log('Simultaneous Request');
+  axios.all([
+    axios.get('https://jsonplaceholder.typicode.com/todos/'),
+    axios.get('https://jsonplaceholder.typicode.com/todos/1')
+  ]).then(axios.spread((todos,posts)=>
+  showOutput(posts)))
+  .catch(err=> console.error(err));
 }
 
 // CUSTOM HEADERS
-function customHeaders() {
-  console.log('Custom Headers');
-}
+// function customHeaders(){
+ 
+// }
 
 // TRANSFORMING REQUESTS & RESPONSES
 function transformResponse() {
-  console.log('Transform Response');
+  const options={
+    method:'post',
+    url:'https://jsonplaceholder.typicode.com/todos',
+    data:{
+      title: 'Hello REST World'
+    },
+    transformResponse:axios.defaults.transformResponse.concat(data =>{
+        data.title=data.title.toUpperCase();
+        return data;
+      })
+  };
+  axios(options).then(res => showOutput(res));
 }
 
 // ERROR HANDLING
 function errorHandling() {
-  console.log('Error Handling');
+  axios
+  .get('https://jsonplaceholder.typicode.com/todoss')
+  .then(res => showOutput(res))
+  .catch(err => {
+    if(err.response){
+      console.log(err.response.data);
+      console.log(err.response.status);
+      console.log(err.response.headers);
+      if(err.response.status===404){
+        alert('Error: 404');
+      }else if(err.request){
+        console.log(err.request);
+      }else{
+        console.err(err.message);
+      }
+    }
+  });
 }
 
 // CANCEL TOKEN
 function cancelToken() {
-  console.log('Cancel Token');
+ const source=axios.CancelToken.source();
+ axios
+ .get('https://jsonplaceholder.typicode.com/todos',{
+    CancelToken:source.token
+ })
+ .then(res=>showOutput(res))
+ .catch(thrown=>{
+   if(axios.isCancel(thrown)){
+     console.log(`Req Cancelled ${thrown.message}`);
+   }
+ });
+ if(true){
+   source.cancel('Request Cancelled');
+ }
 }
 
 // INTERCEPTING REQUESTS & RESPONSES
+axios.interceptors.request.use(config=>{
+  console.log(`${config.method.toUpperCase()} request sent to ${config.url} @ ${new Date().getTime()}`);
+  return config;
+},error=>{
+  return Promise.reject(error)
+});
 
 // AXIOS INSTANCES
 
@@ -89,7 +159,7 @@ document.getElementById('post').addEventListener('click', addTodo);
 document.getElementById('update').addEventListener('click', updateTodo);
 document.getElementById('delete').addEventListener('click', removeTodo);
 document.getElementById('sim').addEventListener('click', getData);
-document.getElementById('headers').addEventListener('click', customHeaders);
+//document.getElementById('headers').addEventListener('click', customHeaders);
 document
   .getElementById('transform')
   .addEventListener('click', transformResponse);
